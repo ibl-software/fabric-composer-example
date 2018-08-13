@@ -1,0 +1,76 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+namespace org.example.empty
+
+enum PropertyType {
+  o apartment
+  o office
+  o commercial
+  o land
+}
+
+enum transfer_status {
+  o transferalbe 
+  o nonetransferable
+  o inTransfer
+}
+
+enum personalStatus {
+  o realPerson
+  o naturalPerson 
+}
+
+abstract asset Property identified by propID {
+  o String propID
+  o PropertyType type
+  o transfer_status trans
+  o String city
+  o String distict
+  o String area //Neighbourhood
+  o String address1
+  o String address2
+  o String address3
+  o String address4 optional
+  o String No
+  o String flat
+}
+  
+participant legalPerson identified by natID {
+  o String natID
+  o String fname
+  o String lname
+  o String postalCode 
+  o String phoneNumber
+}
+
+participant naturalPerson identified by regID {
+  o String regID
+  o String name
+  o String postalCode 
+  o String phoneNumber
+  o String website optional
+  o String email optional
+}
+asset ownerShip extends Property {
+  -->legalPerson legOwner
+  -->naturalPerson natOwner
+}
+
+transaction transfer {
+  -->ownerShip prop
+  -->legalPerson newLeg
+  -->naturalPerson newNat
+}
+
+
