@@ -1,16 +1,5 @@
-/*
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
+
 namespace org.example.empty
 
 enum PropertyType {
@@ -19,58 +8,101 @@ enum PropertyType {
   o commercial
   o land
 }
-
 enum transfer_status {
   o transferalbe 
-  o nonetransferable
+  o nontransferable
   o inTransfer
-}
-
-enum personalStatus {
-  o realPerson
-  o naturalPerson 
-}
-
-abstract asset Property identified by propID {
-  o String propID
-  o PropertyType type
-  o transfer_status trans
-  o String city
-  o String distict
-  o String area //Neighbourhood
-  o String address1
-  o String address2
-  o String address3
-  o String address4 optional
-  o String No
-  o String flat
-}
   
-participant legalPerson identified by natID {
-  o String natID
-  o String fname
-  o String lname
-  o String postalCode 
-  o String phoneNumber
 }
 
-participant naturalPerson identified by regID {
-  o String regID
-  o String name
-  o String postalCode 
-  o String phoneNumber
-  o String website optional
-  o String email optional
+  
+ 
+//using address as a concept help us use it in differant places
+abstract concept Address {
+  o String town
+  o String distict
+  o Integer  no
+  o String street1
+  o String street2
+  o String street3
+  o String street4 optional
+  o Integer flat
+  o String phoneNumber 
+
 }
-asset ownerShip extends Property {
+
+concept IranAddress extends Address {
+  o String zipcode
+}
+
+asset Property identified by propID {
+o String propID // property ID-unique and NOT related to the No. of the property
+o IranAddress address
+o PropertyType type
+o transfer_status stat
+}
+
+participant legalPerson identified by regID{
+  o String regID //registeration ID 
+  o IranAddress address
+}
+participant naturalPerson identified by natID{
+  o String natID //national ID
+  o IranAddress address
+}
+
+abstract concept ownership  {
+  -->Property propID 
+  o Double share
+
+}
+
+concept legOwner extends ownership{
   -->legalPerson legOwner
+}
+
+concept natOwner extends ownership{
   -->naturalPerson natOwner
 }
 
-transaction transfer {
-  -->ownerShip prop
-  -->legalPerson newLeg
-  -->naturalPerson newNat
+participant owner identified by OwnershipID{
+	o legOwner lOwner
+ 	o natOwner nOwner
+	o String OwnershipID 
+  o Double share
 }
 
 
+transaction transfer {
+--> owner ownership
+-->legalPerson newLeg
+-->naturalPerson newNat
+o Double share
+}
+
+abstract concept renting{
+o Double Mortgage //in million - the money lend to the landlord for the period of residence
+o Double rent//monthly paid rent in million
+o DateTime start
+o DateTime end
+}
+
+concept LandLord extends renting{
+ -->owner landLord
+}
+
+
+participant Tenant identified by rentingID{
+  o String rentingID
+ -->naturalPerson nTenant
+ -->legalPerson	lTenant
+ o LandLord lord
+}
+
+
+transaction Renting{
+  o LandLord lord
+ -->naturalPerson nTenant
+ -->legalPerson	lTenant
+ o String rentID
+}
