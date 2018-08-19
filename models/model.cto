@@ -8,14 +8,11 @@ enum PropertyType {
   o commercial
   o land
 }
-enum transfer_status {
+enum TranferStatus {
   o transferalbe 
   o nontransferable
   o inTransfer
-  
 }
-
-  
  
 //using address as a concept help us use it in differant places
 abstract concept Address {
@@ -35,34 +32,33 @@ concept IranAddress extends Address {
   o String zipcode
 }
 
-asset Property identified by propID {
-o String propID // property ID-unique and NOT related to the No. of the property
+asset Property identified by propertyId {
+o String propertyId // property ID-unique and NOT related to the No. of the property
 o IranAddress address
 o PropertyType type
-o transfer_status stat
+o TranferStatus stat
 }
 
-participant legalPerson identified by regID{
+participant JuridicalPerson identified by regID{
   o String regID //registeration ID 
   o IranAddress address
 }
-participant naturalPerson identified by natID{
-  o String natID //national ID
+participant NaturalPerson identified by Id{
+  o String Id //national ID
   o IranAddress address
 }
 
-abstract concept ownership  {
-  -->Property propID 
+abstract concept Ownership  {
+  -->Property propertyId 
   o Double share
-
 }
 
-concept legOwner extends ownership{
-  -->legalPerson legOwner
+concept legOwner extends Ownership{
+  -->JuridicalPerson legOwner
 }
 
-concept natOwner extends ownership{
-  -->naturalPerson natOwner
+concept natOwner extends Ownership{
+  -->NaturalPerson natOwner
 }
 
 participant owner identified by OwnershipID{
@@ -74,9 +70,9 @@ participant owner identified by OwnershipID{
 
 
 transaction transfer {
---> owner ownership
--->legalPerson newLeg
--->naturalPerson newNat
+--> owner Ownership
+-->JuridicalPerson newLeg
+-->NaturalPerson newNat
 o Double share
 }
 
@@ -94,15 +90,15 @@ concept LandLord extends renting{
 
 participant Tenant identified by rentingID{
   o String rentingID
- -->naturalPerson nTenant
- -->legalPerson	lTenant
+ -->NaturalPerson nTenant
+ -->JuridicalPerson	lTenant
  o LandLord lord
 }
 
 
 transaction Renting{
   o LandLord lord
- -->naturalPerson nTenant
- -->legalPerson	lTenant
+ -->NaturalPerson nTenant
+ -->JuridicalPerson	lTenant
  o String rentID
 }
