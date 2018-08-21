@@ -76,29 +76,22 @@ transaction transfer {
 o Double share
 }
 
-abstract concept renting{
+abstract concept Renting {
 o Double Mortgage //in million - the money lend to the landlord for the period of residence
 o Double rent//monthly paid rent in million
 o DateTime start
 o DateTime end
 }
-
-concept LandLord extends renting{
- -->owner landLord
+concept RentProperty extends Renting{
+o String TrackingCode
+}
+participant Tenant identified by TenantID {
+  o String TenantID
+  o RentProperty Rent
+  -->owner OwnershipID
+  -->NaturalPerson nTenant
+  -->JuridicalPerson lTenant
 }
 
-
-participant Tenant identified by rentingID{
-  o String rentingID
- -->NaturalPerson nTenant
- -->JuridicalPerson	lTenant
- o LandLord lord
-}
-
-
-transaction Renting{
-  o LandLord lord
- -->NaturalPerson nTenant
- -->JuridicalPerson	lTenant
- o String rentID
-}
+transaction RentingProperty {
+  }
