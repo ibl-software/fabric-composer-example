@@ -1,5 +1,3 @@
-
-
 namespace org.example.empty
 
 enum PropertyType {
@@ -12,45 +10,66 @@ enum TranferStatus {
   o transferalbe 
   o nontransferable
   o inTransfer
+  
 }
- 
+enum RegistryStatus{
+  o verified
+  o dead
+}
+enum JuridicalStatus{
+  o verified
+  o baned //banning individuals from taking any kinds of actions in order to transfer or rent a property
+}
+
 //using address as a concept help us use it in differant places
 abstract concept Address {
+   o String Province
   o String town
-  o String distict
   o Integer  no
   o String street1
   o String street2
   o String street3
   o String street4 optional
-  o Integer flat
   o String phoneNumber 
-
-}
-
-concept IranAddress extends Address {
+} 
+//we can have many types of addressing, mainly in Iran type of addressing 
+//may be different from town to town or in the country or vilages so 
+//havving a main concept for addressing and extending it to different 
+//types help us cover every possible situation in addressing a property 
+//or a participant here for instanse we mentioned addressing in Town as TownAddress
+concept TownAddress extends Address {
   o String zipcode
+  o Integer flat
+  o String distict
+
 }
 
 asset Property identified by propertyId {
 o String propertyId // property ID-unique and NOT related to the No. of the property
-o IranAddress address
+o TownAddress address
 o PropertyType type
 o TranferStatus stat
+o BankMortgage bank
+o Double unpaidTaxes  
 }
 
 participant JuridicalPerson identified by regID{
   o String regID //registeration ID 
-  o IranAddress address
+  o TownAddress address
+  o RegistryStatus RegStat
+  o JuridicalStatus judgStat
+  o Boolean CurrentFacility 
 }
 participant NaturalPerson identified by Id{
   o String Id //national ID
-  o IranAddress address
+  o TownAddress address
+  o RegistryStatus RegStat
+  o JuridicalStatus judgStat
+  o Boolean CurrentFacility 
 }
 
 abstract concept Ownership  {
   -->Property propertyId 
-  o Double share
 }
 
 concept legOwner extends Ownership{
@@ -69,11 +88,13 @@ participant owner identified by OwnershipID{
 }
 
 
-transaction transfer {
+transaction transfer{
 --> owner Ownership
 -->JuridicalPerson newLeg
 -->NaturalPerson newNat
-o Double share
+o Double share// in percentage
+o Double Price //in million
+o Double Tax//in million
 }
 
 abstract concept Renting {
@@ -82,9 +103,11 @@ o Double rent//monthly paid rent in million
 o DateTime start
 o DateTime end
 }
+
 concept RentProperty extends Renting{
 o String TrackingCode
 }
+
 participant Tenant identified by TenantID {
   o String TenantID
   o RentProperty Rent
@@ -103,3 +126,59 @@ transaction RentingProperty {
   o DateTime end
   o String TrackingCode
   }
+
+
+participant RegisteryOffice identified by branchID {
+  o String branchID
+}
+
+transaction RegStatus {//chaning someones status to dead,baned or verified
+  -->JuridicalPerson legPerson
+  -->NaturalPerson natPerson
+  o String Stat
+}
+
+participant judiciary identified by branchID {
+  o String branchID
+}
+
+transaction judStatus {
+  o String ParticStat
+  o String AssetStat
+  -->JuridicalPerson legPerson
+  -->NaturalPerson natPerson
+
+}
+
+participant Municipality identified by MunicipalityID {
+  o String MunicipalityID
+}
+
+transaction MunicipalityStat {
+  o String PropertyType
+  o String PropertyStat
+  -->Property prop
+}
+
+concept BankMortgage {
+  o Double value
+  o DateTime end
+  o String description
+}
+
+participant Bank identified by branchID {
+  o String branchID
+}
+
+transaction BankFacility {//bank giving Facility to legal and natural people
+  o Double value
+  -->Property porp
+  -->JuridicalPerson legPerson
+  -->NaturalPerson natPerson
+  o String description
+}
+
+transaction BankSuspendingTransfer {
+  -->Property prop
+  o String TransferStat 
+}
