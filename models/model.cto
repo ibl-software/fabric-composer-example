@@ -94,4 +94,12 @@ participant Tenant identified by TenantID {
 }
 
 transaction RentingProperty {
+  -->owner OwnershipID
+  -->JuridicalPerson legTenant
+  -->NaturalPerson natTenant
+  o Double Mortgage
+  o Double rent
+  o DateTime start
+  o DateTime end
+  o String TrackingCode
   }
