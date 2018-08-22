@@ -20,10 +20,10 @@ enum JuridicalStatus{
   o verified
   o baned //banning individuals from taking any kinds of actions in order to transfer or rent a property
 }
-
+//-------------------------------------------------------------------
 //using address as a concept help us use it in differant places
 abstract concept Address {
-   o String Province
+  o String Province
   o String town
   o Integer  no
   o String street1
@@ -45,12 +45,12 @@ concept TownAddress extends Address {
 }
 
 asset Property identified by propertyId {
-o String propertyId // property ID-unique and NOT related to the No. of the property
-o TownAddress address
-o PropertyType type
-o TranferStatus stat
-o BankMortgage bank
-o Double unpaidTaxes  
+  o String propertyId // property ID-unique and NOT related to the No. of the property
+  o TownAddress address
+  o PropertyType type
+  o TranferStatus stat
+  o BankMortgage bank
+  o Double unpaidTaxes  
 }
 
 participant JuridicalPerson identified by regID{
@@ -69,6 +69,7 @@ participant NaturalPerson identified by Id{
   o BankFacility Facility
 
 }
+//-------------------------------------------------------------------
 // Property Regristration ثبت اسناد
 abstract concept Ownership  {
   -->Property propertyId 
@@ -91,23 +92,23 @@ participant owner identified by OwnershipID{
 
 
 transaction transfer{
---> owner Ownership
--->JuridicalPerson newLeg
--->NaturalPerson newNat
-o Double share// in percentage
-o Double Price //in million
-o Double Tax//in million
+  --> owner Ownership
+  -->JuridicalPerson newLeg
+  -->NaturalPerson newNat
+  o Double share// in percentage
+  o Double Price //in million
+  o Double Tax//in million
 }
 
 abstract concept Renting {
-o Double Mortgage //in million - the money lend to the landlord for the period of residence
-o Double rent//monthly paid rent in million
-o DateTime start
-o DateTime end
+  o Double Mortgage //in million - the money lend to the landlord for the period of residence
+  o Double rent//monthly paid rent in million
+  o DateTime start
+  o DateTime end
 }
 
 concept RentProperty extends Renting{
-o String TrackingCode
+  o String TrackingCode
 }
 
 participant Tenant identified by TenantID {
@@ -137,9 +138,11 @@ participant RegisteryOffice identified by branchID {
 transaction RegStatus {//chaning someones status to dead,baned or verified
   -->JuridicalPerson legPerson
   -->NaturalPerson natPerson
+  -->Property prop
   o String Stat
 }
 
+//--------------------------------------------------------------------------
 //judiciary
 participant judiciary identified by branchID {
   o String branchID
@@ -153,6 +156,7 @@ transaction judStatus {
 
 }
 
+//--------------------------------------------------------------------------
 //Municipality
 participant Municipality identified by MunicipalityID {
   o String MunicipalityID
@@ -164,6 +168,26 @@ transaction MunicipalityStat {
   -->Property prop
 }
 
+transaction AddingProperty {
+  o String Province
+  o String town
+  o Integer  no
+  o String street1
+  o String street2
+  o String street3
+  o String street4 optional
+  o String phoneNumber 
+  o String zipcode
+  o Integer flat
+  o String district
+  o String propertyId // property ID-unique and NOT related to the No. of the property
+  o TownAddress address
+  o PropertyType type
+  o TranferStatus stat
+  o BankMortgage bank
+  o Double unpaidTaxes  
+}
+//--------------------------------------------------------------------------
 //BANK
 concept BankMortgage {// a house is in Mortgage of a bank due to taking facilities from bank in order to repair or buy 
   o Double value
@@ -191,7 +215,7 @@ transaction givingBankFacility {//bank giving Facility to legal and natural peop
   o String description
 }
 
-transaction BankSuspendingTransfer {
+transaction BankSuspendingProp {//suspending a property from being transferd
   -->Property prop
   o String TransferStat 
 }
