@@ -51,6 +51,7 @@ asset Property identified by propertyId {
   o TranferStatus stat
   o BankMortgage bank
   o Double unpaidTaxes  
+  o Double Area //in m^2
 }
 
 participant JuridicalPerson identified by regID{
@@ -153,7 +154,7 @@ transaction judStatus {
   o String AssetStat
   -->JuridicalPerson legPerson
   -->NaturalPerson natPerson
-
+  -->Property prop
 }
 
 //--------------------------------------------------------------------------
@@ -169,6 +170,7 @@ transaction MunicipalityStat {
 }
 
 transaction AddingProperty {
+  o String PropID
   o String Province
   o String town
   o Integer  no
@@ -209,6 +211,8 @@ participant Bank identified by branchID {
 
 transaction givingBankFacility {//bank giving Facility to legal and natural people
   o Double value
+  o DateTime start
+  o DateTime end
   -->Property porp
   -->JuridicalPerson legPerson
   -->NaturalPerson natPerson
