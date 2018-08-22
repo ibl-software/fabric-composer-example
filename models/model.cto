@@ -37,11 +37,11 @@ abstract concept Address {
 //havving a main concept for addressing and extending it to different 
 //types help us cover every possible situation in addressing a property 
 //or a participant here for instanse we mentioned addressing in Town as TownAddress
+
 concept TownAddress extends Address {
   o String zipcode
   o Integer flat
-  o String distict
-
+  o String district
 }
 
 asset Property identified by propertyId {
@@ -58,16 +58,18 @@ participant JuridicalPerson identified by regID{
   o TownAddress address
   o RegistryStatus RegStat
   o JuridicalStatus judgStat
-  o Boolean CurrentFacility 
-}
+  o BankFacility Facility
+  }
 participant NaturalPerson identified by Id{
   o String Id //national ID
   o TownAddress address
   o RegistryStatus RegStat
   o JuridicalStatus judgStat
   o Boolean CurrentFacility 
-}
+  o BankFacility Facility
 
+}
+// Property Regristration ثبت اسناد
 abstract concept Ownership  {
   -->Property propertyId 
 }
@@ -138,6 +140,7 @@ transaction RegStatus {//chaning someones status to dead,baned or verified
   o String Stat
 }
 
+//judiciary
 participant judiciary identified by branchID {
   o String branchID
 }
@@ -150,6 +153,7 @@ transaction judStatus {
 
 }
 
+//Municipality
 participant Municipality identified by MunicipalityID {
   o String MunicipalityID
 }
@@ -160,8 +164,17 @@ transaction MunicipalityStat {
   -->Property prop
 }
 
-concept BankMortgage {
+//BANK
+concept BankMortgage {// a house is in Mortgage of a bank due to taking facilities from bank in order to repair or buy 
   o Double value
+  o DateTime start
+  o DateTime end
+  o String description
+}
+
+concept BankFacility {// a Juridical Person or a Natural Person taking facilities from bank 
+  o Double value
+  o Double start
   o DateTime end
   o String description
 }
@@ -170,7 +183,7 @@ participant Bank identified by branchID {
   o String branchID
 }
 
-transaction BankFacility {//bank giving Facility to legal and natural people
+transaction givingBankFacility {//bank giving Facility to legal and natural people
   o Double value
   -->Property porp
   -->JuridicalPerson legPerson
