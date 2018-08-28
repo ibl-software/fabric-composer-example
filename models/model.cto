@@ -20,6 +20,7 @@ enum JuridicalStatus{
   o verified
   o baned //banning individuals from taking any kinds of actions in order to transfer or rent a property
 }
+
 //-------------------------------------------------------------------
 //using address as a concept help us use it in differant places
 abstract concept Address {
@@ -91,6 +92,12 @@ participant owner identified by OwnershipID{
   o Double share
 }
 
+abstract concept Renting {
+  o Double Mortgage //in million - the money lend to the landlord for the period of residence
+  o Double rent//monthly paid rent in million
+  o DateTime start
+  o DateTime end
+}
 
 transaction transfer{
   --> owner Ownership
@@ -101,12 +108,7 @@ transaction transfer{
   o Double Tax//in million
 }
 
-abstract concept Renting {
-  o Double Mortgage //in million - the money lend to the landlord for the period of residence
-  o Double rent//monthly paid rent in million
-  o DateTime start
-  o DateTime end
-}
+
 
 concept RentProperty extends Renting{
   o String TrackingCode
@@ -191,20 +193,24 @@ transaction AddingProperty {
 }
 //--------------------------------------------------------------------------
 //BANK
-concept BankMortgage {// a house is in Mortgage of a bank due to taking facilities from bank in order to repair or buy 
-  o Double value
+abstract concept BM {// a house is in Mortgage of a bank due to taking facilities from bank in order to repair or buy 
   o DateTime start
   o DateTime end
   o String description
 }
 
-concept BankFacility {// a Juridical Person or a Natural Person taking facilities from bank 
-  o Double value
-  o Double start
+concept BankMortgage extends BM {
+    o Double value
+}
+
+abstract concept BF {// a Juridical Person or a Natural Person taking facilities from bank 
+  o DateTime start
   o DateTime end
   o String description
 }
-
+concept BankFacility extends BF {
+ o Double value
+}
 participant Bank identified by branchID {
   o String branchID
 }
