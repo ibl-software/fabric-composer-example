@@ -1,3 +1,17 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 namespace org.example.empty
 
 enum PropertyType {
@@ -50,27 +64,17 @@ asset Property identified by propertyId {
   o TownAddress address
   o PropertyType type
   o TranferStatus stat
-  o BankMortgage bank
-  o Double unpaidTaxes  
   o Double Area //in m^2
+  o Facility facility
 }
 
-participant JuridicalPerson identified by regID{
-  o String regID //registeration ID 
+participant JuridicalPerson identified by natID{
+  o String natID //registeration ID 
   o TownAddress address
   o RegistryStatus RegStat
   o JuridicalStatus judgStat
-  o BankFacility Facility
   }
-participant NaturalPerson identified by Id{
-  o String Id //national ID
-  o TownAddress address
-  o RegistryStatus RegStat
-  o JuridicalStatus judgStat
-  o Boolean CurrentFacility 
-  o BankFacility Facility
 
-}
 //-------------------------------------------------------------------
 // Property Regristration ثبت اسناد
 abstract concept Ownership  {
@@ -81,14 +85,9 @@ concept legOwner extends Ownership{
   -->JuridicalPerson legOwner
 }
 
-concept natOwner extends Ownership{
-  -->NaturalPerson natOwner
-}
-
 participant owner identified by OwnershipID{
 	o legOwner lOwner
- 	o natOwner nOwner
-	o String OwnershipID 
+ 	o String OwnershipID 
   o Double share
 }
 
@@ -102,7 +101,6 @@ abstract concept Renting {
 transaction transfer{
   --> owner Ownership
   -->JuridicalPerson newLeg
-  -->NaturalPerson newNat
   o Double share// in percentage
   o Double Price //in million
   o Double Tax//in million
@@ -118,14 +116,12 @@ participant Tenant identified by TenantID {
   o String TenantID
   o RentProperty Rent
   -->owner OwnershipID
-  -->NaturalPerson nTenant
   -->JuridicalPerson lTenant
 }
 
 transaction RentingProperty {
   -->owner OwnershipID
   -->JuridicalPerson legTenant
-  -->NaturalPerson natTenant
   o Double Mortgage
   o Double rent
   o DateTime start
@@ -140,7 +136,6 @@ participant RegisteryOffice identified by branchID {
 
 transaction RegStatus {//chaning someones status to dead,baned or verified
   -->JuridicalPerson legPerson
-  -->NaturalPerson natPerson
   -->Property prop
   o String Stat
 }
@@ -155,7 +150,6 @@ transaction judStatus {
   o String ParticStat
   o String AssetStat
   -->JuridicalPerson legPerson
-  -->NaturalPerson natPerson
   -->Property prop
 }
 
@@ -165,15 +159,19 @@ participant Municipality identified by MunicipalityID {
   o String MunicipalityID
 }
 
-transaction MunicipalityStat {
-  o String PropertyType
-  o String PropertyStat
+transaction SetPropertyType {
+  o String type
+  -->Property prop
+}
+transaction SetPropertyStatus{
+  o String stat
   -->Property prop
 }
 
+
 transaction AddingProperty {
-  o String PropID
-  o String Province
+  //o String PropID
+  /*o String Province
   o String town
   o Integer  no
   o String street1
@@ -188,27 +186,16 @@ transaction AddingProperty {
   o TownAddress address
   o PropertyType type
   o TranferStatus stat
-  o BankMortgage bank
-  o Double unpaidTaxes  
+  o Double unpaidTaxes  */
 }
 //--------------------------------------------------------------------------
 //BANK
-abstract concept BM {// a house is in Mortgage of a bank due to taking facilities from bank in order to repair or buy 
+  abstract concept BankFacilty {// a Juridical Person or a Natural Person taking facilities from bank 
   o DateTime start
   o DateTime end
   o String description
 }
-
-concept BankMortgage extends BM {
-    o Double value
-}
-
-abstract concept BF {// a Juridical Person or a Natural Person taking facilities from bank 
-  o DateTime start
-  o DateTime end
-  o String description
-}
-concept BankFacility extends BF {
+concept Facility extends BankFacilty {
  o Double value
 }
 participant Bank identified by branchID {
@@ -219,13 +206,25 @@ transaction givingBankFacility {//bank giving Facility to legal and natural peop
   o Double value
   o DateTime start
   o DateTime end
-  -->Property porp
-  -->JuridicalPerson legPerson
-  -->NaturalPerson natPerson
+  //--> owner Ownership
+  -->Property prop
   o String description
+}
+transaction payingForFacility {
+  o Double amount
+  -->Property prop
 }
 
 transaction BankSuspendingProp {//suspending a property from being transferd
   -->Property prop
   o String TransferStat 
+}
+
+//________________________________________
+asset test identified by testID{
+  o String testID
+}
+
+transaction addTest {
+  o String ID
 }
