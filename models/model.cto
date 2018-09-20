@@ -1,230 +1,102 @@
-/*
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+
+/**
+ * transferring a property 
+ * @param {org.example.empty.transfer} transfer - the trade to be processed
+ * @transaction
+ */
+async function tradeCommodity(transfer) { // eslint-disable-line no-unused-vars
+  
+  if(transfer.Ownership.lOwner.propertyId.facility.value == 0 &&
+     transfer.Ownership.lOwner.propertyId.stat == "transferalbe" &&
+     transfer.Ownership.lOwner.legOwner.judgStat == "verified" &&
+     transfer.Ownership.lOwner.legOwner.RegStat == "verified")
+    {
+       transfer.Ownership.lOwner.legOwner = transfer.newLeg;
+         transfer.Ownership.share = transfer.share;
+         const ar = await getParticipantRegistry('org.example.empty.owner');
+         await ar.update(transfer.Ownership);
+    }
+ else{
+     throw new Error('there is a problem with the Owner or the property,check again!!');}
+   }
+
+/**
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * @param {org.example.empty.AddingProperty} AddProp - SetupDemo instance
+ * @transaction
+ */
+  async function AddProp(AddProp){
+    const factory = getFactory();
+    const NS = 'org.example.empty';
+    const newProp = factory.newResource(NS, 'Property', AddProp.propertyId);
+    // regulator.address.Province = AddProp.Province;
+    // regulator.address.town = AddProp.Town;
+    // regulator.address.no = AddProp.no;
+    // regulator.address.street1 = AddProp.street1;
+    // regulator.address.street2 = AddProp.street2;
+    // regulator.address.street3 = AddProp.street3;
+    // regulator.address.phoneNumber = AddProp.phoneNumber;
+    // regulator.address.zipcode = AddProp.zipcode;
+    // regulator.address.flat = AddProp.flat;
+    // regulator.address.district = AddProp.district;
+    newProp.type = AddProp.type;
+    newProp.stat = AddProp.stat;
+    newProp.Area = AddProp.Area;
+    const regulatorRegistry = await getAssetRegistry(NS + '.Property');
+    await regulatorRegistry.addAll([newProp]);
+   }
+
+/**
+ * chaning property status
+ * @param {org.example.empty.SetPropertyStatus} setStat- the trade to be processed
+ * @transaction
+ */
+async function setPropStat(setStat){
+
+       setStat.prop.stat = setStat.stat;
+       const ar = await getAssetRegistry('org.example.empty.Property');
+       await ar.update(setStat.prop);
+
+   }
+
+/**
+ * chaning property type
+ * @param {org.example.empty.SetPropertyType} setType- the trade to be processed
+ * @transaction
+ */
+async function setPropType(setType){
+
+       setType.prop.type = setType.type;
+       const ar = await getAssetRegistry('org.example.empty.Property');
+       await ar.update(setType.prop);
+
+   }
+
+
+/**
+ * giving facility to a property
+ * @param {org.example.empty.givingBankFacility} gf
+ * @transaction
  */
 
-namespace org.example.empty
-
-enum PropertyType {
-  o apartment
-  o office
-  o commercial
-  o land
-}
-enum TranferStatus {
-  o transferalbe 
-  o nontransferable
-  o inTransfer
-  
-}
-enum RegistryStatus{
-  o verified
-  o dead
-}
-enum JuridicalStatus{
-  o verified
-  o baned //banning individuals from taking any kinds of actions in order to transfer or rent a property
-}
-
-//-------------------------------------------------------------------
-//using address as a concept help us use it in differant places
-abstract concept Address {
-  o String Province
-  o String town
-  o Integer  no
-  o String street1
-  o String street2
-  o String street3
-  o String street4 optional
-  o String phoneNumber 
-} 
-//we can have many types of addressing, mainly in Iran type of addressing 
-//may be different from town to town or in the country or vilages so 
-//havving a main concept for addressing and extending it to different 
-//types help us cover every possible situation in addressing a property 
-//or a participant here for instanse we mentioned addressing in Town as TownAddress
-
-concept TownAddress extends Address {
-  o String zipcode
-  o Integer flat
-  o String district
-}
-
-asset Property identified by propertyId {
-  o String propertyId // property ID-unique and NOT related to the No. of the property
-  o TownAddress address
-  o PropertyType type
-  o TranferStatus stat
-  o Double Area //in m^2
-  o Facility facility
-}
-
-participant JuridicalPerson identified by natID{
-  o String natID //registeration ID 
-  o TownAddress address
-  o RegistryStatus RegStat
-  o JuridicalStatus judgStat
-  }
-
-//-------------------------------------------------------------------
-// Property Regristration ثبت اسناد
-abstract concept Ownership  {
-  -->Property propertyId 
-}
-
-concept legOwner extends Ownership{
-  -->JuridicalPerson legOwner
-}
-
-participant owner identified by OwnershipID{
-	o legOwner lOwner
- 	o String OwnershipID 
-  o Double share
-}
-
-abstract concept Renting {
-  o Double Mortgage //in million - the money lend to the landlord for the period of residence
-  o Double rent//monthly paid rent in million
-  o DateTime start
-  o DateTime end
-}
-
-transaction transfer{
-  --> owner Ownership
-  -->JuridicalPerson newLeg
-  o Double share// in percentage
-  o Double Price //in million
-  o Double Tax//in million
-}
+async function giveFac(gf){
+   		gf.prop.facility.value = gf.value;
+  		gf.prop.facility.start = gf.start;
+  		gf.prop.facility.end = gf.end;
+  		gf.prop.facility.description = gf.description;
+       const ar = await getAssetRegistry('org.example.empty.Property');
+       await ar.update(gf.prop);
+     }
 
 
+/**
+ * giving facility to a property
+ * @param {org.example.empty.payingForFacility} pf -paying for facility
+ * @transaction
+ */
 
-concept RentProperty extends Renting{
-  o String TrackingCode
-}
-
-participant Tenant identified by TenantID {
-  o String TenantID
-  o RentProperty Rent
-  -->owner OwnershipID
-  -->JuridicalPerson lTenant
-}
-
-transaction RentingProperty {
-  -->owner OwnershipID
-  -->JuridicalPerson legTenant
-  o Double Mortgage
-  o Double rent
-  o DateTime start
-  o DateTime end
-  o String TrackingCode
-  }
-
-
-participant RegisteryOffice identified by branchID {
-  o String branchID
-}
-
-transaction RegStatus {//chaning someones status to dead,baned or verified
-  -->JuridicalPerson legPerson
-  -->Property prop
-  o String Stat
-}
-
-//--------------------------------------------------------------------------
-//judiciary
-participant judiciary identified by branchID {
-  o String branchID
-}
-
-transaction judStatus {
-  o String ParticStat
-  o String AssetStat
-  -->JuridicalPerson legPerson
-  -->Property prop
-}
-
-//--------------------------------------------------------------------------
-//Municipality
-participant Municipality identified by MunicipalityID {
-  o String MunicipalityID
-}
-
-transaction SetPropertyType {
-  o String type
-  -->Property prop
-}
-transaction SetPropertyStatus{
-  o String stat
-  -->Property prop
-}
-
-
-transaction AddingProperty {
-  //o String PropID
-  /*o String Province
-  o String town
-  o Integer  no
-  o String street1
-  o String street2
-  o String street3
-  o String street4 optional
-  o String phoneNumber 
-  o String zipcode
-  o Integer flat
-  o String district
-  o String propertyId // property ID-unique and NOT related to the No. of the property
-  o TownAddress address
-  o PropertyType type
-  o TranferStatus stat
-  o Double unpaidTaxes  */
-}
-//--------------------------------------------------------------------------
-//BANK
-  abstract concept BankFacilty {// a Juridical Person or a Natural Person taking facilities from bank 
-  o DateTime start
-  o DateTime end
-  o String description
-}
-concept Facility extends BankFacilty {
- o Double value
-}
-participant Bank identified by branchID {
-  o String branchID
-}
-
-transaction givingBankFacility {//bank giving Facility to legal and natural people
-  o Double value
-  o DateTime start
-  o DateTime end
-  //--> owner Ownership
-  -->Property prop
-  o String description
-}
-transaction payingForFacility {
-  o Double amount
-  -->Property prop
-}
-
-transaction BankSuspendingProp {//suspending a property from being transferd
-  -->Property prop
-  o String TransferStat 
-}
-
-//________________________________________
-asset test identified by testID{
-  o String testID
-}
-
-transaction addTest {
-  o String ID
-}
+async function payFac(pf){
+		pf.prop.facility.value = pf.prop.facility.value - pf.amount;
+  		const ar = await getAssetRegistry('org.example.empty.Property');
+  		await ar.update(pf.prop);
+ 	}
