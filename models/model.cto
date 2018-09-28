@@ -1,0 +1,220 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+namespace org.example.empty
+
+enum PropertyType {
+  o apartment
+  o office
+  o commercial
+  o land
+}
+enum TranferStatus {
+  o transferalbe 
+  o nontransferable
+  o inTransfer
+  
+}
+enum RegistryStatus{
+  o verified
+  o dead
+}
+enum JuridicalStatus{
+  o verified
+  o baned //banning individuals from taking any kinds of actions in order to transfer or rent a property
+}
+
+//-------------------------------------------------------------------
+//using address as a concept help us use it in differant places
+abstract concept Address {
+  o String Province  
+  o String town  
+  o Integer  no 
+  o String street1  
+  o String street2 
+  o String street3 
+  o String street4 optional 
+  o String phoneNumber  
+} 
+//we can have many types of addressing, mainly in Iran type of addressing 
+//may be different from town to town or in the country or vilages so 
+//havving a main concept for addressing and extending it to different 
+//types help us cover every possible situation in addressing a property 
+//or a participant here for instanse we mentioned addressing in Town as TownAddress
+
+concept TownAddress extends Address {
+  o String zipcode  
+  o Integer flat  
+  o String district  
+}
+
+asset Property identified by propertyId {
+  o String propertyId // property ID-unique and NOT related to the No. of the property
+  o TownAddress address 
+  o PropertyType type 
+  o TranferStatus stat 
+  o Double Area optional //in m^2
+}
+
+participant JuridicalPerson identified by natID{
+  o String natID //registeration ID 
+  o TownAddress address
+  o RegistryStatus RegStat
+  o JuridicalStatus judgStat
+  }
+
+//-------------------------------------------------------------------
+// Property Regristration ثبت اسناد
+abstract concept Ownership  {
+  -->Property propertyId 
+}
+
+concept legOwner extends Ownership{
+  -->JuridicalPerson legOwner
+}
+
+participant owner identified by OwnershipID{
+	o legOwner lOwner
+ 	o String OwnershipID 
+  o Double share
+}
+
+abstract concept Renting {
+  o Double Mortgage //in million - the money lend to the landlord for the period of residence
+  o Double rent//monthly paid rent in million
+  o DateTime start
+  o DateTime end
+}
+
+transaction transfer{
+  --> owner Ownership
+  -->JuridicalPerson newLeg
+  o Double share// in percentage
+  o Double Price //in million
+  o Double Tax//in million
+}
+
+
+
+concept RentProperty extends Renting{
+  o String TrackingCode
+}
+
+participant Tenant identified by TenantID {
+  o String TenantID
+  o RentProperty Rent
+  -->owner OwnershipID
+  -->JuridicalPerson lTenant
+}
+
+transaction RentingProperty {
+  -->owner OwnershipID
+  -->JuridicalPerson legTenant
+  o Double Mortgage
+  o Double rent
+  o DateTime start
+  o DateTime end
+  o String TrackingCode
+  }
+
+
+participant RegisteryOffice identified by branchID {
+  o String branchID
+}
+
+transaction RegStatus {//chaning someones status to dead,baned or verified
+  -->JuridicalPerson legPerson
+  -->Property prop
+  o String Stat
+}
+
+//--------------------------------------------------------------------------
+//judiciary
+participant judiciary identified by branchID {
+  o String branchID
+}
+
+transaction judStatus {
+  o String ParticStat
+  o String AssetStat
+  -->JuridicalPerson legPerson
+  -->Property prop
+}
+
+//--------------------------------------------------------------------------
+//Municipality
+participant Municipality identified by MunicipalityID {
+  o String MunicipalityID
+}
+
+transaction SetPropertyType {
+  o String type
+  -->Property prop
+}
+transaction SetPropertyStatus{
+  o String stat
+  -->Property prop
+}
+
+
+transaction AddingProperty {
+  o String propertyId // property ID-unique and NOT related to the No. of the property
+  //o String PropID
+  o Double Area
+  o String Province
+  o String town
+  o Integer  no
+  o String street1
+  o String street2
+  o String street3
+  o String street4 optional
+  o String phoneNumber 
+  o String zipcode
+  o Integer flat
+  o String district
+  o PropertyType type
+  o TranferStatus stat
+  //o Double unpaidTaxes 
+}
+//--------------------------------------------------------------------------
+//BANK
+  abstract concept BankFacilty {// a Juridical Person or a Natural Person taking facilities from bank 
+  o DateTime start
+  o DateTime end
+  o String description
+}
+concept Facility extends BankFacilty {
+ o Double value
+}
+participant Bank identified by branchID {
+  o String branchID
+}
+
+transaction givingBankFacility {//bank giving Facility to legal and natural people
+  o Double value
+  o DateTime start
+  o DateTime end
+  //--> owner Ownership
+  -->Property prop
+  o String description
+}
+transaction payingForFacility {
+  o Double amount
+  -->Property prop
+}
+
+transaction BankSuspendingProp {//suspending a property from being transferd
+  -->Property prop
+  o String TransferStat 
+}
